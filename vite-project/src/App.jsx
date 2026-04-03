@@ -1,121 +1,171 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect, createContext, useContext } from "react";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+const ThemeContext = createContext("");
+
+export default function App() {
+  const [theme, setTheme] = useState("light");
+  return (
+    <>
+      <ThemeContext.Provider value={{ theme, setTheme }}>
+        <div className={theme}>
+          <h1>ToDo </h1>
+          <TodoList />
+        </div>
+      </ThemeContext.Provider>
+    </>
+  );
+}
+
+// --------------------------------------------------------
+function ThemeToggle() {
+  const { theme, setTheme } = useContext(ThemeContext);
+
+  function thameTem() {
+    setTheme((e) => (e === "light" ? "dark" : "light"));
+  }
 
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+      <button onClick={() => thameTem()}>Тема</button>
+      {theme === "light" ? "🌙 Темная" : "☀️ Светлая"}
     </>
-  )
+  );
 }
+// --------------------------------------------------------
 
-export default App
+// --------------------------------------------------------
+function TodoItem({ todo, onDelete }) {
+  function createSpanLi(p) {
+    if (p.length > 20) {
+      return (
+        <span style={{ color: "green" }}>
+          {p}: <span style={{ color: "red" }}>"Длинная"</span>
+        </span>
+      );
+    }
+    return <span style={{ color: "green" }}>{p}</span>;
+  }
+
+  if (todo.length === 0) {
+    return <p>Список задач пуст!</p>;
+  }
+  return (
+    <li onDoubleClick={() => onDelete(todo.id)}>
+      {createSpanLi(todo.text)}
+      <button onClick={() => onDelete(todo.id)}>X</button>;
+    </li>
+  );
+}
+// --------------------------------------------------------
+
+// --------------------------------------------------------
+function TodoInput({ value, onChange, onAdd, onKeyDown }) {
+  return (
+    <>
+      <input
+        type="text"
+        value={value}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+      />
+      <button onClick={onAdd}>Add</button>
+    </>
+  );
+}
+// --------------------------------------------------------
+
+// --------------------------------------------------------
+function TodoStats({ items, inputValue, deleteAll }) {
+  function counterLengthText() {
+    if (inputValue === "") {
+      return <>"Начните вводить"</>;
+    }
+    return <>"Готово для добавления"</>;
+  }
+
+  function createButtonAr() {
+    if (items.length >= 5) {
+      return <button>Архив</button>;
+    }
+    return;
+  }
+
+  function counterLength() {
+    return inputValue.length;
+  }
+
+  return (
+    <>
+      <button onClick={() => deleteAll()}>Очистить Все</button>
+      {createButtonAr()}
+      <p>{counterLengthText()}</p>
+      <p>Символов: {counterLength()}</p>
+    </>
+  );
+}
+// --------------------------------------------------------
+
+function TodoList() {
+  const [items, setItems] = useState([
+    { id: 1, text: "Купить молоко" },
+    { id: 2, text: "Прогулка" },
+  ]);
+  const [inputValue, setInputValue] = useState("");
+
+  useEffect(() => {
+    const resX = items.length;
+    console.log(inputValue);
+    console.log(`веденно Значений: ${(document.title = resX)}`);
+  }, [items, inputValue]);
+
+  function setItem(e) {
+    const value = e.target.value;
+    setInputValue((p) => (p = value));
+  }
+
+  function addToDo() {
+    if (inputValue.trim() === "") return;
+    const newToDo = {
+      id: Date.now(),
+      text: inputValue,
+    };
+    setItems([...items, newToDo]);
+    setInputValue("");
+  }
+
+  function keyDown(e) {
+    if (e.key === "Enter") addToDo();
+  }
+
+  function deleteTodo(id) {
+    setItems(items.filter((todos) => todos.id !== id));
+  }
+
+  function deleteAll() {
+    setItems([]);
+  }
+
+  return (
+    <div id="containerToDo">
+      <TodoStats
+        items={items}
+        inputValue={inputValue}
+        deleteAll={() => deleteAll()}
+      />
+      <ThemeToggle />
+      <TodoInput
+        value={inputValue}
+        onChange={setItem}
+        onAdd={addToDo}
+        onKeyDown={keyDown}
+      />
+      <h1>item: </h1>
+      <ul>
+        {items.map((to) => (
+          <TodoItem todo={to} onDelete={() => deleteTodo(to.id)} key={to.id} />
+        ))}
+      </ul>
+    </div>
+  );
+}
