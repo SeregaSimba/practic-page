@@ -9,7 +9,7 @@ export default function App() {
     <>
       <ThemeContext.Provider value={{ theme, setTheme }}>
         <div className={theme}>
-          <h1>ToDo </h1>
+          <h1>ToDo 1 </h1>
           <TodoList />
         </div>
       </ThemeContext.Provider>
