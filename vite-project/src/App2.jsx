@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useReducer,
+  useMemo,
 } from "react";
 
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
@@ -153,6 +154,7 @@ function TodoItem({ todo, onDelete }) {
   if (todo.length === 0) {
     return <p>Список задач пуст!</p>;
   }
+
   return (
     <li onDoubleClick={() => onDelete(todo.id)}>
       {createSpanLi(todo.text)}
@@ -161,6 +163,10 @@ function TodoItem({ todo, onDelete }) {
   );
 }
 // --------------------------------------------------------
+
+function TuDoLength() {
+  return <p>Список задач пуст!</p>;
+}
 
 // --------------------------------------------------------
 function TodoInput({ value, onChange, onAdd, onKeyDown }) {
@@ -180,12 +186,10 @@ function TodoInput({ value, onChange, onAdd, onKeyDown }) {
 
 // --------------------------------------------------------
 function TodoStats({ items, inputValue, deleteAll }) {
-  function counterLengthText() {
-    if (inputValue === "") {
-      return <>"Начните вводить"</>;
-    }
-    return <>"Готово для добавления"</>;
-  }
+  const statusText = useMemo(
+    () => (inputValue === "" ? "Начните вводить" : "Готово для добавления"),
+    [inputValue],
+  );
 
   function createButtonAr() {
     if (items.length >= 5) {
@@ -194,16 +198,13 @@ function TodoStats({ items, inputValue, deleteAll }) {
     return null;
   }
 
-  function counterLength() {
-    return inputValue.length;
-  }
-
+  const countLength = useMemo(() => inputValue.length, [inputValue]);
   return (
     <>
       <button onClick={() => deleteAll()}>Очистить Все</button>
       {createButtonAr()}
-      <p>{counterLengthText()}</p>
-      <p>Символов: {counterLength()}</p>
+      <p>{statusText}</p>
+      <p>Символов: {countLength}</p>
     </>
   );
 }
@@ -216,6 +217,10 @@ function TodoList() {
 
   const { todos, addToDo, deleteTodo, deleteAll, status, error, todos2 } =
     useTodos(MOCK_TODOS);
+
+  const counterToDoLength = useMemo(() => {
+    return todos.reduce((sum, todo) => sum + todo.text.length, 0);
+  }, [todos]);
 
   useEffect(() => {
     const resX = todos.length;
@@ -258,15 +263,25 @@ function TodoList() {
         }}
         onKeyDown={keyDown}
       />
-      <h1>item: </h1>
+      <h1>item: {counterToDoLength}</h1>
       <ul>
-        {todos.map((to) => (
-          <TodoItem todo={to} onDelete={() => deleteTodo(to.id)} key={to.id} />
-        ))}
+        {todos.length !== 0 ? (
+          todos.map((to) => (
+            <TodoItem
+              todo={to}
+              onDelete={() => deleteTodo(to.id)}
+              key={to.id}
+            />
+          ))
+        ) : (
+          <TuDoLength />
+        )}
       </ul>
     </div>
   );
 }
+
+//------------------------------------------------------------------------------------------
 
 function Registration() {
   return (
